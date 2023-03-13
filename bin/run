@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+var commander = require("../index");
+var commander2 = require("../main");
+const { Command } = require("commander");
+const program = new Command();
+
+program
+  .version(require("../package").version, "-v, --version")
+  .option("-u, --upload <filelist>", "upload 45")
+  .option("-n, --numbers <numbers>", "numbers")
+  .option("-t, --types <types>", "system")
+  .parse(process.argv);
+
+const options = program.opts();
+
+if (options.upload) {
+  commander.upload(options.upload);
+}
+
+if (options.numbers && options.types) {
+  commander2.upload(options.types, options.numbers);
+}
