@@ -1,6 +1,6 @@
 {
   "name": "mx-sftp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "upload through sftp",
   "author": "maoxin",
   "repository": {

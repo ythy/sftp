@@ -43,6 +43,7 @@ var SftpClient = require("ssh2-sftp-client");
 var _baseDir = process.cwd();
 var CONFIG_FILE = "config.json";
 var _config = {}; //必备参数
+var _ftp = {}; //必备参数
 function upload(outerFiles) {
     return __awaiter(this, void 0, void 0, function () {
         var fileList, clientNode, _i, fileList_1, uploadFile, localFile, remoteFile, status_1, result, result;
@@ -56,53 +57,56 @@ function upload(outerFiles) {
                     return [4 /*yield*/, loadConfig(CONFIG_FILE)];
                 case 1:
                     _config = _a.sent();
+                    return [4 /*yield*/, loadAbsoluteConfig(_config.ftp_store)];
+                case 2:
+                    _ftp = _a.sent();
                     fileList = outerFiles.split(",");
                     //开始上传
                     log("start upload files to 45", "yellow");
                     clientNode = new SftpClient();
                     return [4 /*yield*/, clientNode.connect({
-                            host: _config.ftp_host,
+                            host: _ftp.ftp_host_test,
                             port: 22,
-                            username: _config.ftp_user,
-                            password: _config.ftp_pw
+                            username: _ftp.ftp_user_test,
+                            password: _ftp.ftp_pw_test
                         })];
-                case 2:
+                case 3:
                     _a.sent();
                     _i = 0, fileList_1 = fileList;
-                    _a.label = 3;
-                case 3:
-                    if (!(_i < fileList_1.length)) return [3 /*break*/, 9];
+                    _a.label = 4;
+                case 4:
+                    if (!(_i < fileList_1.length)) return [3 /*break*/, 10];
                     uploadFile = fileList_1[_i];
                     localFile = path.join(_config.entry, uploadFile);
                     remoteFile = _config.remote_entry + uploadFile;
                     return [4 /*yield*/, (0, fileUtils_1.stat)(localFile)];
-                case 4:
+                case 5:
                     status_1 = _a.sent();
-                    if (!status_1.isDirectory()) return [3 /*break*/, 6];
+                    if (!status_1.isDirectory()) return [3 /*break*/, 7];
                     return [4 /*yield*/, clientNode
                             .uploadDir(localFile, remoteFile)["catch"](function (err) {
                             log("upload dir error: " + err, "red");
                         })];
-                case 5:
+                case 6:
                     result = _a.sent();
                     if (result) {
                         log("upload dir success: " + remoteFile, "green");
                     }
-                    return [3 /*break*/, 8];
-                case 6: return [4 /*yield*/, clientNode
+                    return [3 /*break*/, 9];
+                case 7: return [4 /*yield*/, clientNode
                         .put(localFile, remoteFile)["catch"](function (err) {
                         log("upload file error: " + err, "red");
                     })];
-                case 7:
+                case 8:
                     result = _a.sent();
                     if (result) {
                         log("upload file success: " + remoteFile, "green");
                     }
-                    _a.label = 8;
-                case 8:
-                    _i++;
-                    return [3 /*break*/, 3];
+                    _a.label = 9;
                 case 9:
+                    _i++;
+                    return [3 /*break*/, 4];
+                case 10:
                     log("end upload files to 45", "yellow");
                     clientNode.end();
                     return [2 /*return*/];
@@ -135,4 +139,7 @@ function log(info, color) {
 function loadConfig(file) {
     if (file === void 0) { file = CONFIG_FILE; }
     return (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, file));
+}
+function loadAbsoluteConfig(paths) {
+    return (0, fileUtils_1.readJsonFile)(paths);
 }
