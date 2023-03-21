@@ -1,6 +1,6 @@
 # sftp
 
 ```git
-git remote add sftp git@github.com:ythy/sftp.git
-git push -u sftp main
+git remote add origin git@github.com:ythy/sftp.git
+git push -u origin main
 ```
