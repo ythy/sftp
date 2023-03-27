@@ -1,7 +1,8 @@
-import * as fs from "fs";
 import * as path from "path";
-import { readJsonFile, stat } from "./lib/fileUtils";
-const SftpClient = require("ssh2-sftp-client");
+import { readJsonFile } from "./lib/fileUtils";
+import SFTP from "./lib/SFTP";
+import { log, dateFormat } from "./lib/tools";
+import type { IFTPConfig } from "./lib/type";
 
 interface IConfig {
   entry: string; //项目路径
@@ -14,108 +15,91 @@ interface IConfig {
   buyerExpMenu: string[];
   supplierMenu: string[];
   ftp_store: string; //ftp配置文件
-}
-
-interface IFTP {
-  ftp_host_test: string;
-  ftp_user_test: string;
-  ftp_pw_test: string;
-  ftp_host_idc_node1: string;
-  ftp_user_idc_node1: string;
-  ftp_pw_idc_node1: string;
-  ftp_host_idc_node2: string;
-  ftp_user_idc_node2: string;
-  ftp_pw_idc_node2: string;
-}
-
-interface IFile {
-  name: string;
-  size: number;
-  date: number;
+  backup_entry: string; //备份入口 绝对路径
 }
 
 const _baseDir = process.cwd();
 const CONFIG_FILE = "config_main.json";
 let _config = {} as IConfig; //必备参数
-let _ftp = {} as IFTP; //必备参数
+let _ftp = {} as IFTPConfig; //必备参数
 
 export async function upload(type: string, version: string) {
-  _config = await loadConfig<IConfig>(CONFIG_FILE);
-  _ftp = await loadAbsoluteConfig(_config.ftp_store);
+  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, CONFIG_FILE));
+  _ftp = await readJsonFile<IFTPConfig>(_config.ftp_store);
+
   const paths = _config[type] as string[];
-  const dist = path.join(_config.entry, paths[0]);
   const fileList = [paths[1], `static/${type}/${version}/`];
 
   //开始上传
   log("start upload files to 45", "yellow");
-  const clientNode = new SftpClient();
-  await clientNode.connect({
-    host: _ftp.ftp_host_test,
-    port: 22,
-    username: _ftp.ftp_user_test,
-    password: _ftp.ftp_pw_test,
-  });
-
-  for (const uploadFile of fileList) {
-    const localFile = path.join(dist, uploadFile);
-    const remoteFile = _config.remote_entry + uploadFile;
-    const status = await stat(localFile);
-    if (status.isDirectory()) {
-      const result = await clientNode
-        .uploadDir(localFile, remoteFile)
-        .catch((err: any) => {
-          log("upload dir error: " + err, "red");
-        });
-      if (result) {
-        log("upload dir success: " + remoteFile, "green");
-      }
-    } else {
-      const result = await clientNode
-        .put(localFile, remoteFile)
-        .catch((err: any) => {
-          log("upload file error: " + err, "red");
-        });
-      if (result) {
-        log("upload file success: " + remoteFile, "green");
-      }
-    }
-  }
+  const sftp = new SFTP();
+  await sftp.connect(_ftp.ftp_host_test, _ftp.ftp_user_test, _ftp.ftp_pw_test);
+  await sftp.upload(
+    fileList,
+    path.join(_config.entry, paths[0]),
+    _config.remote_entry
+  );
+  await sftp.disconnect();
   log("end upload files to 45", "yellow");
-  clientNode.end();
   //上传结束
 }
 
-function log(
-  info: string,
-  color: "green" | "red" | "yellow" | "blue" | "cyan" | "normal" = "normal"
-) {
-  if (color === "normal") {
-    console.log(info);
-  } else if (color === "red") {
-    console.log("\x1b[31m%s\x1b[0m", info);
-  } else if (color === "green") {
-    console.log("\x1b[32m%s\x1b[0m", info);
-  } else if (color === "yellow") {
-    console.log("\x1b[33m%s\x1b[0m", info);
-  } else if (color === "blue") {
-    console.log("\x1b[34m%s\x1b[0m", info);
-  } else if (color === "cyan") {
-    console.log("\x1b[36m%s\x1b[0m", info);
-  }
+export async function idc(type: string, version: string) {
+  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, CONFIG_FILE));
+  _ftp = await readJsonFile<IFTPConfig>(_config.ftp_store);
+
+  const paths = _config[type] as string[];
+  const fileList = [paths[1], `static/${type}/${version}/`];
+  const backupEntry = path.join(
+    _config.backup_entry,
+    type,
+    dateFormat(new Date().getTime()).replace(/[:\/\s]/g, "-")
+  );
+
+  //开始备份
+  log("start backup file from idc", "yellow");
+  const node1Backup = new SFTP();
+  await node1Backup.connect(
+    _ftp.ftp_host_idc_node1,
+    _ftp.ftp_user_idc_node1,
+    _ftp.ftp_pw_idc_node1
+  );
+  await node1Backup.download([paths[1]], backupEntry, _config.remote_entry);
+  await node1Backup.disconnect();
+  log("end backup files from idc", "yellow");
+  //备份结束
+
+  //开始上传node1
+  log("start upload files to Node1", "yellow");
+  const node1Upload = new SFTP();
+  await node1Upload.connect(
+    _ftp.ftp_host_idc_node1,
+    _ftp.ftp_user_idc_node1,
+    _ftp.ftp_pw_idc_node1
+  );
+  await node1Upload.upload(
+    fileList,
+    path.join(_config.entry, paths[0]),
+    _config.remote_entry
+  );
+  await node1Upload.disconnect();
+  log("end upload files to Node1", "yellow");
+  //上传结束
+
+  //开始上传node2
+  log("start upload files to Node2", "yellow");
+  const node2Upload = new SFTP();
+  await node2Upload.connect(
+    _ftp.ftp_host_idc_node2,
+    _ftp.ftp_user_idc_node2,
+    _ftp.ftp_pw_idc_node2
+  );
+  await node2Upload.upload(
+    fileList,
+    path.join(_config.entry, paths[0]),
+    _config.remote_entry
+  );
+  await node2Upload.disconnect();
+  log("end upload files to Node2", "yellow");
+  //上传结束
 }
-
-function loadConfig<T = IConfig>(file = CONFIG_FILE) {
-  return readJsonFile<T>(path.resolve(_baseDir, file));
-}
-
-function loadAbsoluteConfig<T = IFTP>(paths) {
-  return readJsonFile<T>(paths);
-}
-
-// async function test() {
-//   _config = await loadConfig<IConfig>(CONFIG_FILE);
-//   _ftp = await loadAbsoluteConfig(_config.ftp_store);
-//   console.log(1, _ftp.ftp_pw_test);
-// }
-
-// test();

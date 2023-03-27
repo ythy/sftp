@@ -1,6 +1,6 @@
 {
   "name": "mx-sftp",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "upload through sftp",
   "author": "maoxin",
   "repository": {
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "npx tsc main.ts index.ts",
-    "test": "node ./main.js",
+    "test": "node ./index.js",
     "go": "npm run build && npm run test"
   },
   "maintainers": [
@@ -22,8 +22,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.11.12",
-    "@types/ssh2": "^0.5.49",
-    "@types/ssh2-sftp-client": "^7.0.0",
+    "@types/ssh2": "^0.5.52",
     "typescript": "^4.5.2"
   },
   "dependencies": {

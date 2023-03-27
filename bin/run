@@ -7,8 +7,10 @@ const program = new Command();
 program
   .version(require("../package").version, "-v, --version")
   .option("-u, --upload <filelist>", "upload 45")
+  .option("-i1, --idc1 <filelist>", "upload idc supplier app")
   .option("-n, --numbers <numbers>", "numbers")
   .option("-t, --types <types>", "system")
+  .option("-i2, --idc2", "upload idc mp")
   .parse(process.argv);
 
 const options = program.opts();
@@ -17,6 +19,14 @@ if (options.upload) {
   commander.upload(options.upload);
 }
 
+if (options.idc1) {
+  commander.idc(options.idc1);
+}
+
 if (options.numbers && options.types) {
   commander2.upload(options.types, options.numbers);
+}
+
+if (options.numbers && options.types && options.idc2) {
+  commander2.idc(options.types, options.numbers);
 }
