@@ -9,3 +9,9 @@ export interface IFTPConfig {
   ftp_user_idc_node2: string;
   ftp_pw_idc_node2: string;
 }
+
+export interface IFile {
+  name: string;
+  size: number;
+  date: number;
+}

@@ -53,6 +53,39 @@ export default class FTPUtils {
     });
   }
 
+  uploadFlies(fileList: string[], remoteEntry: string) {
+    return new Promise<number>(async (resovle) => {
+      for (const uploadFile of fileList) {
+        const localFile = uploadFile;
+        const remoteFile = remoteEntry + path.basename(uploadFile);
+        const status = await stat(localFile);
+        if (status.isDirectory()) {
+          const result = await this.client
+            .uploadDir(localFile, remoteFile)
+            .catch((err: any) => {
+              log("upload dir error: " + err, "red");
+            });
+          if (result) {
+            log("upload dir success: " + remoteFile, "green");
+          }
+        } else {
+          const remoteDir = path.dirname(remoteFile);
+          const existInRemote = await this.client.exists(remoteDir);
+          if (!existInRemote) await this.client.mkdir(remoteDir, true);
+          const result = await this.client
+            .put(localFile, remoteFile)
+            .catch((err: any) => {
+              log("upload file error: " + err, "red");
+            });
+          if (result) {
+            log("upload file success: " + remoteFile, "green");
+          }
+        }
+      }
+      resovle(1);
+    });
+  }
+
   download(fileList: string[], localEntry: string, remoteEntry: string) {
     return new Promise<number>(async (resovle) => {
       for (const uploadFile of fileList) {

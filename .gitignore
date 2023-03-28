@@ -1,3 +1,6 @@
 node_modules
 config.json
 config_main.json
+upload_check_config.json
+upload_idc_config.json
+check_upload_copy.cmd
