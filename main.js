@@ -97,7 +97,7 @@ function idc(type, version) {
                     return [4 /*yield*/, node1Backup.connect(_ftp.ftp_host_idc_node1, _ftp.ftp_user_idc_node1, _ftp.ftp_pw_idc_node1)];
                 case 3:
                     _a.sent();
-                    return [4 /*yield*/, node1Backup.download([paths[1]], backupEntry, _config.remote_entry)];
+                    return [4 /*yield*/, node1Backup.download([paths[1]], backupEntry, _config.remote_idc_entry)];
                 case 4:
                     _a.sent();
                     return [4 /*yield*/, node1Backup.disconnect()];
@@ -111,7 +111,7 @@ function idc(type, version) {
                     return [4 /*yield*/, node1Upload.connect(_ftp.ftp_host_idc_node1, _ftp.ftp_user_idc_node1, _ftp.ftp_pw_idc_node1)];
                 case 6:
                     _a.sent();
-                    return [4 /*yield*/, node1Upload.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_entry)];
+                    return [4 /*yield*/, node1Upload.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_idc_entry)];
                 case 7:
                     _a.sent();
                     return [4 /*yield*/, node1Upload.disconnect()];
@@ -125,7 +125,7 @@ function idc(type, version) {
                     return [4 /*yield*/, node2Upload.connect(_ftp.ftp_host_idc_node2, _ftp.ftp_user_idc_node2, _ftp.ftp_pw_idc_node2)];
                 case 9:
                     _a.sent();
-                    return [4 /*yield*/, node2Upload.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_entry)];
+                    return [4 /*yield*/, node2Upload.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_idc_entry)];
                 case 10:
                     _a.sent();
                     return [4 /*yield*/, node2Upload.disconnect()];

@@ -23,7 +23,7 @@ if (options.idc1) {
   commander.idc(options.idc1);
 }
 
-if (options.numbers && options.types) {
+if (options.numbers && options.types && options.idc2 !== true) {
   commander2.upload(options.types, options.numbers);
 }
 

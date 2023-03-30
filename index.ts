@@ -15,6 +15,7 @@ interface IConfig {
   ftp_store: string; //ftp配置文件
   backup_entry: string; //备份入口 绝对路径
   idc_local_entry: string; //IDC 本地路径入口 绝对路径
+  remote_idc_entry: string;
 }
 
 const _baseDir = process.cwd();
@@ -63,7 +64,11 @@ export async function idc(outerFiles: string) {
     _ftp.ftp_user_idc_node1,
     _ftp.ftp_pw_idc_node1
   );
-  await node1Backup.download(["index.html"], backupEntry, _config.remote_entry);
+  await node1Backup.download(
+    ["index.html"],
+    backupEntry,
+    _config.remote_idc_entry
+  );
   await node1Backup.disconnect();
   log("end backup files from idc", "yellow");
   //备份结束
@@ -79,7 +84,7 @@ export async function idc(outerFiles: string) {
   await node1Upload.upload(
     fileList,
     _config.idc_local_entry,
-    _config.remote_entry
+    _config.remote_idc_entry
   );
   await node1Upload.disconnect();
   log("end upload files to Node1", "yellow");
@@ -96,7 +101,7 @@ export async function idc(outerFiles: string) {
   await node2Upload.upload(
     fileList,
     _config.idc_local_entry,
-    _config.remote_entry
+    _config.remote_idc_entry
   );
   await node2Upload.disconnect();
   log("end upload files to Node2", "yellow");

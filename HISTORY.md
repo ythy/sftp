@@ -1,3 +1,8 @@
+## 0.0.5 - 2023.03.30
+
+- fixed bug: 独立测试系统和正式系统的 FTP 路径
+- fixed bug: run options.numbers && options.types 命令冲突，导致同时执行 2 个命令
+
 ## 0.0.4 - 2023.03.28
 
 - 整合 mp 功能
