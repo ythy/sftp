@@ -1,8 +1,9 @@
 import * as path from "path";
-import { readJsonFile } from "./lib/fileUtils";
+import { readJsonFile, copy } from "./lib/fileUtils";
 import SFTP from "./lib/SFTP";
 import { log, dateFormat } from "./lib/tools";
 import type { IFTPConfig } from "./lib/type";
+import DBUtils from "./lib/DBUtils";
 
 interface IConfig {
   entry: string; //项目路径
@@ -17,6 +18,12 @@ interface IConfig {
   ftp_store: string; //ftp配置文件
   backup_entry: string; //备份入口 绝对路径
   remote_idc_entry: string;
+
+  host: string; //数据库HOST
+  user: string; //数据库用户名
+  password: string; //数据库密码
+  database: string; //数据库名
+  compileEntry: string; //项目编译路径
 }
 
 const _baseDir = process.cwd();
@@ -37,7 +44,7 @@ export async function upload(type: string, version: string) {
   await sftp.connect(_ftp.ftp_host_test, _ftp.ftp_user_test, _ftp.ftp_pw_test);
   await sftp.upload(
     fileList,
-    path.join(_config.entry, paths[0]),
+    path.join(_config.compileEntry, paths[0]),
     _config.remote_entry
   );
   await sftp.disconnect();
@@ -80,7 +87,7 @@ export async function idc(type: string, version: string) {
   );
   await node1Upload.upload(
     fileList,
-    path.join(_config.entry, paths[0]),
+    path.join(_config.compileEntry, paths[0]),
     _config.remote_idc_entry
   );
   await node1Upload.disconnect();
@@ -97,10 +104,39 @@ export async function idc(type: string, version: string) {
   );
   await node2Upload.upload(
     fileList,
-    path.join(_config.entry, paths[0]),
+    path.join(_config.compileEntry, paths[0]),
     _config.remote_idc_entry
   );
   await node2Upload.disconnect();
   log("end upload files to Node2", "yellow");
   //上传结束
+}
+
+export async function copyCompileFiles(type: string, version: string) {
+  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, CONFIG_FILE));
+  const dbUtils = new DBUtils(_config);
+  dbUtils.getJtracByVersionAndType(version, type).then(async (jtracFiles) => {
+    dbUtils.close();
+    if (!jtracFiles?.length || jtracFiles?.length === 0) {
+      console.log("error in search");
+      return;
+    }
+    for (const jtrac of jtracFiles) {
+      console.log(`start copy jtrac: ${jtrac.jtrac_no}`);
+      const filelist = jtrac.file_list?.split(",");
+      for (const file of filelist) {
+        const result = await copy(
+          file,
+          _config.entry,
+          _config.compileEntry
+        ).catch((error) => {
+          console.log(`error in copy ${file}: `, error);
+          throw error;
+        });
+        if (result) {
+          console.log("copied: ", file);
+        }
+      }
+    }
+  });
 }

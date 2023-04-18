@@ -36,11 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.idc = exports.upload = void 0;
+exports.copyCompileFiles = exports.idc = exports.upload = void 0;
 var path = require("path");
 var fileUtils_1 = require("./lib/fileUtils");
 var SFTP_1 = require("./lib/SFTP");
 var tools_1 = require("./lib/tools");
+var DBUtils_1 = require("./lib/DBUtils");
 var _baseDir = process.cwd();
 var CONFIG_FILE = "config_main.json";
 var _config = {}; //必备参数
@@ -64,7 +65,7 @@ function upload(type, version) {
                     return [4 /*yield*/, sftp.connect(_ftp.ftp_host_test, _ftp.ftp_user_test, _ftp.ftp_pw_test)];
                 case 3:
                     _a.sent();
-                    return [4 /*yield*/, sftp.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_entry)];
+                    return [4 /*yield*/, sftp.upload(fileList, path.join(_config.compileEntry, paths[0]), _config.remote_entry)];
                 case 4:
                     _a.sent();
                     return [4 /*yield*/, sftp.disconnect()];
@@ -111,7 +112,7 @@ function idc(type, version) {
                     return [4 /*yield*/, node1Upload.connect(_ftp.ftp_host_idc_node1, _ftp.ftp_user_idc_node1, _ftp.ftp_pw_idc_node1)];
                 case 6:
                     _a.sent();
-                    return [4 /*yield*/, node1Upload.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_idc_entry)];
+                    return [4 /*yield*/, node1Upload.upload(fileList, path.join(_config.compileEntry, paths[0]), _config.remote_idc_entry)];
                 case 7:
                     _a.sent();
                     return [4 /*yield*/, node1Upload.disconnect()];
@@ -125,7 +126,7 @@ function idc(type, version) {
                     return [4 /*yield*/, node2Upload.connect(_ftp.ftp_host_idc_node2, _ftp.ftp_user_idc_node2, _ftp.ftp_pw_idc_node2)];
                 case 9:
                     _a.sent();
-                    return [4 /*yield*/, node2Upload.upload(fileList, path.join(_config.entry, paths[0]), _config.remote_idc_entry)];
+                    return [4 /*yield*/, node2Upload.upload(fileList, path.join(_config.compileEntry, paths[0]), _config.remote_idc_entry)];
                 case 10:
                     _a.sent();
                     return [4 /*yield*/, node2Upload.disconnect()];
@@ -138,3 +139,73 @@ function idc(type, version) {
     });
 }
 exports.idc = idc;
+function copyCompileFiles(type, version) {
+    return __awaiter(this, void 0, void 0, function () {
+        var dbUtils;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, CONFIG_FILE))];
+                case 1:
+                    _config = _a.sent();
+                    dbUtils = new DBUtils_1["default"](_config);
+                    dbUtils.getJtracByVersionAndType(version, type).then(function (jtracFiles) { return __awaiter(_this, void 0, void 0, function () {
+                        var _i, jtracFiles_1, jtrac, filelist, _loop_1, _a, filelist_1, file;
+                        var _b;
+                        return __generator(this, function (_c) {
+                            switch (_c.label) {
+                                case 0:
+                                    dbUtils.close();
+                                    if (!(jtracFiles === null || jtracFiles === void 0 ? void 0 : jtracFiles.length) || (jtracFiles === null || jtracFiles === void 0 ? void 0 : jtracFiles.length) === 0) {
+                                        console.log("error in search");
+                                        return [2 /*return*/];
+                                    }
+                                    _i = 0, jtracFiles_1 = jtracFiles;
+                                    _c.label = 1;
+                                case 1:
+                                    if (!(_i < jtracFiles_1.length)) return [3 /*break*/, 6];
+                                    jtrac = jtracFiles_1[_i];
+                                    console.log("start copy jtrac: ".concat(jtrac.jtrac_no));
+                                    filelist = (_b = jtrac.file_list) === null || _b === void 0 ? void 0 : _b.split(",");
+                                    _loop_1 = function (file) {
+                                        var result;
+                                        return __generator(this, function (_d) {
+                                            switch (_d.label) {
+                                                case 0: return [4 /*yield*/, (0, fileUtils_1.copy)(file, _config.entry, _config.compileEntry)["catch"](function (error) {
+                                                        console.log("error in copy ".concat(file, ": "), error);
+                                                        throw error;
+                                                    })];
+                                                case 1:
+                                                    result = _d.sent();
+                                                    if (result) {
+                                                        console.log("copied: ", file);
+                                                    }
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    };
+                                    _a = 0, filelist_1 = filelist;
+                                    _c.label = 2;
+                                case 2:
+                                    if (!(_a < filelist_1.length)) return [3 /*break*/, 5];
+                                    file = filelist_1[_a];
+                                    return [5 /*yield**/, _loop_1(file)];
+                                case 3:
+                                    _c.sent();
+                                    _c.label = 4;
+                                case 4:
+                                    _a++;
+                                    return [3 /*break*/, 2];
+                                case 5:
+                                    _i++;
+                                    return [3 /*break*/, 1];
+                                case 6: return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.copyCompileFiles = copyCompileFiles;

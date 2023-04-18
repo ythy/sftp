@@ -9,6 +9,7 @@ program
   .option("-u, --upload <filelist>", "upload 45")
   .option("-i1, --idc1 <filelist>", "upload idc supplier app")
   .option("-n, --numbers <numbers>", "numbers")
+  .option("-n2, --copynumbers <copynumbers>", "copynumbers")
   .option("-t, --types <types>", "system")
   .option("-i2, --idc2", "upload idc mp")
   .parse(process.argv);
@@ -21,6 +22,10 @@ if (options.upload) {
 
 if (options.idc1) {
   commander.idc(options.idc1);
+}
+
+if (options.copynumbers && options.types) {
+  commander2.copyCompileFiles(options.types, options.copynumbers);
 }
 
 if (options.numbers && options.types && options.idc2 !== true) {
