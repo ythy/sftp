@@ -37,6 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.copyCompileFiles = exports.idc = exports.upload = void 0;
+/**
+ * 用于上传BU GERP SU
+ * @Author maoxin
+ *
+ */
 var path = require("path");
 var fileUtils_1 = require("./lib/fileUtils");
 var SFTP_1 = require("./lib/SFTP");
@@ -48,7 +53,7 @@ var _config = {}; //必备参数
 var _ftp = {}; //必备参数
 function upload(type, version) {
     return __awaiter(this, void 0, void 0, function () {
-        var paths, fileList, sftp;
+        var paths, fileList, sftp, sftp2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, CONFIG_FILE))];
@@ -72,6 +77,18 @@ function upload(type, version) {
                 case 5:
                     _a.sent();
                     (0, tools_1.log)("end upload files to 45", "yellow");
+                    (0, tools_1.log)("start upload files to 46", "yellow");
+                    sftp2 = new SFTP_1["default"]();
+                    return [4 /*yield*/, sftp2.connect(_ftp.ftp_host_test2, _ftp.ftp_user_test2, _ftp.ftp_pw_test2)];
+                case 6:
+                    _a.sent();
+                    return [4 /*yield*/, sftp2.upload(fileList, path.join(_config.compileEntry, paths[0]), _config.remote_entry)];
+                case 7:
+                    _a.sent();
+                    return [4 /*yield*/, sftp2.disconnect()];
+                case 8:
+                    _a.sent();
+                    (0, tools_1.log)("end upload files to 46", "yellow");
                     return [2 /*return*/];
             }
         });

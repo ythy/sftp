@@ -109,22 +109,16 @@ function insertVersion(version, types) {
                     dbUtils
                         .updateJtracTo45(version, modules.join(","))
                         .then(function (result) { return __awaiter(_this, void 0, void 0, function () {
-                        var sftp, modulesCombinedJS_1, modulesCombinedCSS_1, jspList;
+                        var modulesCombinedJS_1, modulesCombinedCSS_1, jspList, sftp, sftp2;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     dbUtils.close();
                                     if (!(!result.changedRows || result.changedRows < 1)) return [3 /*break*/, 1];
                                     console.log("error in update jtrac: changedRows < 1");
-                                    return [3 /*break*/, 7];
+                                    return [3 /*break*/, 12];
                                 case 1:
                                     console.log("update jtrac status success: changedRows ( ".concat(result === null || result === void 0 ? void 0 : result.changedRows, " )"));
-                                    //开始上传FTP
-                                    console.log("start upload files ");
-                                    sftp = new SFTP_1["default"]();
-                                    return [4 /*yield*/, sftp.connect(_ftp.ftp_host_test, _ftp.ftp_user_test, _ftp.ftp_pw_test)];
-                                case 2:
-                                    _a.sent();
                                     modulesCombinedJS_1 = [];
                                     modulesCombinedCSS_1 = [];
                                     modules.forEach(function (originPath) {
@@ -136,24 +130,47 @@ function insertVersion(version, types) {
                                             modulesCombinedCSS_1.push(originPath, originPath + ".gz");
                                         }
                                     });
+                                    jspList = _config.local_entry_jsp.filter(function (_, i) {
+                                        return jspTypes.includes(String(i));
+                                    });
+                                    console.log("start upload files to 45");
+                                    sftp = new SFTP_1["default"]();
+                                    return [4 /*yield*/, sftp.connect(_ftp.ftp_host_test, _ftp.ftp_user_test, _ftp.ftp_pw_test)];
+                                case 2:
+                                    _a.sent();
                                     return [4 /*yield*/, sftp.upload(modulesCombinedJS_1, _config.entry, _config.remote_entry_script)];
                                 case 3:
                                     _a.sent();
                                     return [4 /*yield*/, sftp.upload(modulesCombinedCSS_1, _config.entry_css, _config.remote_entry_styles)];
                                 case 4:
                                     _a.sent();
-                                    jspList = _config.local_entry_jsp.filter(function (_, i) {
-                                        return jspTypes.includes(String(i));
-                                    });
                                     return [4 /*yield*/, sftp.uploadFlies(jspList, _config.remote_entry_jsp)];
                                 case 5:
                                     _a.sent();
-                                    console.log("end upload files ");
+                                    console.log("end upload files to 45");
                                     return [4 /*yield*/, sftp.disconnect()];
                                 case 6:
                                     _a.sent();
-                                    _a.label = 7;
-                                case 7: return [2 /*return*/];
+                                    console.log("start upload files to 46");
+                                    sftp2 = new SFTP_1["default"]();
+                                    return [4 /*yield*/, sftp2.connect(_ftp.ftp_host_test2, _ftp.ftp_user_test2, _ftp.ftp_pw_test2)];
+                                case 7:
+                                    _a.sent();
+                                    return [4 /*yield*/, sftp2.upload(modulesCombinedJS_1, _config.entry, _config.remote_entry_script)];
+                                case 8:
+                                    _a.sent();
+                                    return [4 /*yield*/, sftp2.upload(modulesCombinedCSS_1, _config.entry_css, _config.remote_entry_styles)];
+                                case 9:
+                                    _a.sent();
+                                    return [4 /*yield*/, sftp2.uploadFlies(jspList, _config.remote_entry_jsp)];
+                                case 10:
+                                    _a.sent();
+                                    console.log("end upload files to 46");
+                                    return [4 /*yield*/, sftp2.disconnect()];
+                                case 11:
+                                    _a.sent();
+                                    _a.label = 12;
+                                case 12: return [2 /*return*/];
                             }
                         });
                     }); })["catch"](function (error) {

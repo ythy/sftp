@@ -7,7 +7,9 @@ const program = new Command();
 program
   .version(require("../package").version, "-v, --version")
   .option("-u, --upload <filelist>", "upload 45")
+  .option("-u2, --upload2 <filelist>", "upload 45 buyer app")
   .option("-i1, --idc1 <filelist>", "upload idc supplier app")
+  .option("-i3, --idc3 <filelist>", "upload idc buyer app")
   .option("-n, --numbers <numbers>", "numbers")
   .option("-n2, --copynumbers <copynumbers>", "copynumbers")
   .option("-t, --types <types>", "system")
@@ -17,11 +19,19 @@ program
 const options = program.opts();
 
 if (options.upload) {
-  commander.upload(options.upload);
+  commander.upload(options.upload, 1);
+}
+
+if (options.upload2) {
+  commander.upload(options.upload2, 2);
 }
 
 if (options.idc1) {
-  commander.idc(options.idc1);
+  commander.idc(options.idc1, 1);
+}
+
+if (options.idc3) {
+  commander.idc(options.idc3, 2);
 }
 
 if (options.copynumbers && options.types) {

@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 exports.idc = exports.upload = void 0;
 /**
- * 用于Supplier_Vue项目上传测试系统，过程自动
+ * 用于Supplier_Vue和Buyer_Vue项目上传测试系统，过程自动
  * @Author maoxin
  *
  */
@@ -48,11 +48,14 @@ var tools_1 = require("./lib/tools");
 var SFTP_1 = require("./lib/SFTP");
 var _baseDir = process.cwd();
 var CONFIG_FILE = "config.json";
+var CONFIG_BU_FILE = "config_app_buyer.json";
 var _config = {}; //必备参数
 var _ftp = {}; //必备参数
-function upload(outerFiles) {
+//type 1 supplier; 2 buyer
+function upload(outerFiles, type) {
+    if (type === void 0) { type = 1; }
     return __awaiter(this, void 0, void 0, function () {
-        var fileList, sftp;
+        var jsonfile, fileList, sftp, sftp2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -60,7 +63,8 @@ function upload(outerFiles) {
                         (0, tools_1.log)("error in read file list", "red");
                         return [2 /*return*/];
                     }
-                    return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, CONFIG_FILE))];
+                    jsonfile = type == 1 ? CONFIG_FILE : CONFIG_BU_FILE;
+                    return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, jsonfile))];
                 case 1:
                     _config = _a.sent();
                     return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(_config.ftp_store)];
@@ -80,15 +84,29 @@ function upload(outerFiles) {
                 case 5:
                     _a.sent();
                     (0, tools_1.log)("end upload files to 45", "yellow");
+                    (0, tools_1.log)("start upload files to 46", "yellow");
+                    sftp2 = new SFTP_1["default"]();
+                    return [4 /*yield*/, sftp2.connect(_ftp.ftp_host_test2, _ftp.ftp_user_test2, _ftp.ftp_pw_test2)];
+                case 6:
+                    _a.sent();
+                    return [4 /*yield*/, sftp2.upload(fileList, _config.entry, _config.remote_entry)];
+                case 7:
+                    _a.sent();
+                    return [4 /*yield*/, sftp2.disconnect()];
+                case 8:
+                    _a.sent();
+                    (0, tools_1.log)("end upload files to 46", "yellow");
                     return [2 /*return*/];
             }
         });
     });
 }
 exports.upload = upload;
-function idc(outerFiles) {
+//type 1 supplier; 2 buyer
+function idc(outerFiles, type) {
+    if (type === void 0) { type = 1; }
     return __awaiter(this, void 0, void 0, function () {
-        var fileList, backupEntry, node1Backup, node1Upload, node2Upload;
+        var jsonfile, fileList, backupEntry, node1Backup, node1Upload, node2Upload;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -96,7 +114,8 @@ function idc(outerFiles) {
                         (0, tools_1.log)("error in read file list", "red");
                         return [2 /*return*/];
                     }
-                    return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, CONFIG_FILE))];
+                    jsonfile = type == 1 ? CONFIG_FILE : CONFIG_BU_FILE;
+                    return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(path.resolve(_baseDir, jsonfile))];
                 case 1:
                     _config = _a.sent();
                     return [4 /*yield*/, (0, fileUtils_1.readJsonFile)(_config.ftp_store)];

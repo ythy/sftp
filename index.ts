@@ -1,5 +1,5 @@
 /**
- * 用于Supplier_Vue项目上传测试系统，过程自动
+ * 用于Supplier_Vue和Buyer_Vue项目上传测试系统，过程自动
  * @Author maoxin
  *
  */
@@ -20,15 +20,18 @@ interface IConfig {
 
 const _baseDir = process.cwd();
 const CONFIG_FILE = "config.json";
+const CONFIG_BU_FILE = "config_app_buyer.json";
 let _config = {} as IConfig; //必备参数
 let _ftp = {} as IFTPConfig; //必备参数
 
-export async function upload(outerFiles: string) {
+//type 1 supplier; 2 buyer
+export async function upload(outerFiles: string, type: number = 1) {
   if (!outerFiles) {
     log("error in read file list", "red");
     return;
   }
-  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, CONFIG_FILE));
+  const jsonfile = type == 1 ? CONFIG_FILE : CONFIG_BU_FILE;
+  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, jsonfile));
   _ftp = await readJsonFile<IFTPConfig>(_config.ftp_store);
   const fileList = outerFiles.split(",");
 
@@ -39,15 +42,28 @@ export async function upload(outerFiles: string) {
   await sftp.upload(fileList, _config.entry, _config.remote_entry);
   await sftp.disconnect();
   log("end upload files to 45", "yellow");
+
+  log("start upload files to 46", "yellow");
+  const sftp2 = new SFTP();
+  await sftp2.connect(
+    _ftp.ftp_host_test2,
+    _ftp.ftp_user_test2,
+    _ftp.ftp_pw_test2
+  );
+  await sftp2.upload(fileList, _config.entry, _config.remote_entry);
+  await sftp2.disconnect();
+  log("end upload files to 46", "yellow");
   //上传结束
 }
 
-export async function idc(outerFiles: string) {
+//type 1 supplier; 2 buyer
+export async function idc(outerFiles: string, type: number = 1) {
   if (!outerFiles) {
     log("error in read file list", "red");
     return;
   }
-  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, CONFIG_FILE));
+  const jsonfile = type == 1 ? CONFIG_FILE : CONFIG_BU_FILE;
+  _config = await readJsonFile<IConfig>(path.resolve(_baseDir, jsonfile));
   _ftp = await readJsonFile<IFTPConfig>(_config.ftp_store);
   const fileList = outerFiles.split(",");
 

@@ -1,3 +1,8 @@
+/**
+ * 用于上传BU GERP SU
+ * @Author maoxin
+ *
+ */
 import * as path from "path";
 import { readJsonFile, copy } from "./lib/fileUtils";
 import SFTP from "./lib/SFTP";
@@ -49,6 +54,20 @@ export async function upload(type: string, version: string) {
   );
   await sftp.disconnect();
   log("end upload files to 45", "yellow");
+  log("start upload files to 46", "yellow");
+  const sftp2 = new SFTP();
+  await sftp2.connect(
+    _ftp.ftp_host_test2,
+    _ftp.ftp_user_test2,
+    _ftp.ftp_pw_test2
+  );
+  await sftp2.upload(
+    fileList,
+    path.join(_config.compileEntry, paths[0]),
+    _config.remote_entry
+  );
+  await sftp2.disconnect();
+  log("end upload files to 46", "yellow");
   //上传结束
 }
 

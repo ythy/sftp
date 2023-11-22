@@ -97,15 +97,6 @@ export async function insertVersion(version: string, types: string) {
           `update jtrac status success: changedRows ( ${result?.changedRows} )`
         );
         //开始上传FTP
-        console.log("start upload files ");
-
-        const sftp = new SFTP();
-        await sftp.connect(
-          _ftp.ftp_host_test,
-          _ftp.ftp_user_test,
-          _ftp.ftp_pw_test
-        );
-
         let modulesCombinedJS: string[] = [];
         let modulesCombinedCSS: string[] = [];
         modules.forEach((originPath) => {
@@ -120,7 +111,17 @@ export async function insertVersion(version: string, types: string) {
             modulesCombinedCSS.push(originPath, originPath + ".gz");
           }
         });
+        const jspList = _config.local_entry_jsp.filter((_, i) => {
+          return jspTypes.includes(String(i));
+        });
 
+        console.log("start upload files to 45");
+        const sftp = new SFTP();
+        await sftp.connect(
+          _ftp.ftp_host_test,
+          _ftp.ftp_user_test,
+          _ftp.ftp_pw_test
+        );
         await sftp.upload(
           modulesCombinedJS,
           _config.entry,
@@ -132,15 +133,31 @@ export async function insertVersion(version: string, types: string) {
           _config.entry_css,
           _config.remote_entry_styles
         );
-
-        const jspList = _config.local_entry_jsp.filter((_, i) => {
-          return jspTypes.includes(String(i));
-        });
-
         await sftp.uploadFlies(jspList, _config.remote_entry_jsp);
-
-        console.log("end upload files ");
+        console.log("end upload files to 45");
         await sftp.disconnect();
+
+        console.log("start upload files to 46");
+        const sftp2 = new SFTP();
+        await sftp2.connect(
+          _ftp.ftp_host_test2,
+          _ftp.ftp_user_test2,
+          _ftp.ftp_pw_test2
+        );
+        await sftp2.upload(
+          modulesCombinedJS,
+          _config.entry,
+          _config.remote_entry_script
+        );
+
+        await sftp2.upload(
+          modulesCombinedCSS,
+          _config.entry_css,
+          _config.remote_entry_styles
+        );
+        await sftp2.uploadFlies(jspList, _config.remote_entry_jsp);
+        console.log("end upload files to 46");
+        await sftp2.disconnect();
       }
     })
     .catch((error) => {
